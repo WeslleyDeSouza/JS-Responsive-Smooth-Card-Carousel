@@ -266,123 +266,132 @@
       <div class="card-slide"></div>
     </div>
     <script>
-      (() => {
-        const siblings = {
-          getNextAll(elem, filter) {
-            var sibs = [];
-            while ((elem = elem.nextSibling)) {
-              if (elem.nodeType === 3) continue; // text node
-              if (!filter || filter(elem)) sibs.push(elem);
-            }
-            return sibs;
-          },
-          getPreviousAll(elem, filter) {
-            var sibs = [];
-            while ((elem = elem.previousSibling)) {
-              if (elem.nodeType === 3) continue; // text node
-              if (!filter || filter(elem)) sibs.push(elem);
-            }
-            return sibs;
-          },
-        };
+      /*
+ * https://github.com/WeslleyDeSouza/Responsive-Smooth-Card-Carousel
+ * */
+function Slider(parameters = {}) {
+  const selector = {
+    container: parameters.container || ".card-carousel",
+    cards: parameters.cards || ".card-slide",
+  };
 
-        const selector = {
-          container: ".card-carousel",
-          cards: ".card-slide",
-        };
-        const _$ = (selector) => {
-          return {
-            el:
-              typeof selector == "string"
-                ? document.querySelector(selector)
-                : selector,
-            addClass(className) {
-              try {
-                this.el.classList.add(className);
-              } catch (e) {}
-              return this;
-            },
-            removeClass(className) {
-              try {
-                this.el.classList.remove(className);
-              } catch (e) {}
-              return this;
-            },
-            prev() {
-              return _$(this.el.previousElementSibling);
-            },
-            next() {
-              return _$(this.el.nextElementSibling);
-            },
-            prevAll(cb) {
-              siblings.getPreviousAll(this.el).forEach((el) => cb(_$(el)));
-              return this;
-            },
-            nextAll(cb) {
-              siblings.getNextAll(this.el).forEach((el) => cb(_$(el)));
-              return this;
-            },
-          };
-        };
+  const siblings = {
+    getNextAll(elem, filter) {
+      var sibs = [];
+      while ((elem = elem.nextSibling)) {
+        if (elem.nodeType === 3) continue; // text node
+        if (!filter || filter(elem)) sibs.push(elem);
+      }
+      return sibs;
+    },
+    getPreviousAll(elem, filter) {
+      var sibs = [];
+      while ((elem = elem.previousSibling)) {
+        if (elem.nodeType === 3) continue; // text node
+        if (!filter || filter(elem)) sibs.push(elem);
+      }
+      return sibs;
+    },
+  };
 
-        $container = _$(selector.container);
-        $cards = document.querySelectorAll(selector.cards);
-        $num = $cards.length;
-        $even = $num / 2;
-        $odd = ($num + 1) / 2;
+  const _$ = (selector) => {
+    return {
+      el:
+        typeof selector == "string"
+          ? $container.el.querySelector(selector)
+          : selector,
+      addClass(className) {
+        try {
+          this.el.classList.add(className);
+        } catch (e) {}
+        return this;
+      },
+      removeClass(className) {
+        try {
+          this.el.classList.remove(className);
+        } catch (e) {}
+        return this;
+      },
+      prev() {
+        return _$(this.el.previousElementSibling);
+      },
+      next() {
+        return _$(this.el.nextElementSibling);
+      },
+      prevAll(cb) {
+        siblings.getPreviousAll(this.el).forEach((el) => cb(_$(el)));
+        return this;
+      },
+      nextAll(cb) {
+        siblings.getNextAll(this.el).forEach((el) => cb(_$(el)));
+        return this;
+      },
+    };
+  };
 
-        if ($num % 2 == 0) {
-          _$(".card-slide:nth-child(" + $even + ")")
-            .addClass("active")
-            .prevAll((node) => node.addClass("prev"))
-            .nextAll((node) => node.addClass("next"));
-        } else {
-          _$(".card-slide:nth-child(" + $odd + ")")
-            .addClass("active")
-            .prevAll((node) => node.addClass("prev"))
-            .nextAll((node) => node.addClass("next"));
-        }
+  $container = _$(document.querySelector(selector.container));
+  $cards = $container.el.querySelectorAll(selector.cards);
 
-        function onClick(ev) {
-          let offset = +_$(".active").el.clientWidth;
-          let match = $container.el.style.transform.match(
-            /-?[0-9]+(\.[0-9]+)?/g,
-            ""
-          );
-          const currentOffset = +(match ? match[0] : 0) || 0;
-          const $current = _$(ev.target);
+  $num = $cards.length;
+  $even = $num / 2;
+  $odd = ($num + 1) / 2;
 
-          offset *= ev.target.classList.contains("next") ? -1 : 1;
+  if ($num % 2 == 0) {
+    _$(selector.cards + ":nth-child(" + $even + ")")
+      .addClass("active")
+      .prevAll((node) => node.addClass("prev"))
+      .nextAll((node) => node.addClass("next"));
+  } else {
+    _$(selector.cards + ":nth-child(" + $odd + ")")
+      .addClass("active")
+      .prevAll((node) => node.addClass("prev"))
+      .nextAll((node) => node.addClass("next"));
+  }
 
-          $container.el.style.transform =
-            "translateX(" + (currentOffset + offset) + "px)";
+  function onClick(ev) {
+    let offset = +_$(selector.cards + ".active").el.clientWidth;
+    console.log(offset);
+    let match = $container.el.style.transform.match(/-?[0-9]+(\.[0-9]+)?/g, "");
+    const currentOffset = +(match ? match[0] : 0) || 0;
+    const $current = _$(ev.target);
 
-          $current.addClass("active").removeClass("prev").removeClass("next");
+    offset *= ev.target.classList.contains("next") ? -1 : 1;
 
-          $current
-            .prevAll((el) =>
-              el.removeClass("next").removeClass("active").addClass("prev")
-            )
-            .nextAll((el) =>
-              el.removeClass("prev").removeClass("active").addClass("next")
-            );
-        }
+    $container.el.style.transform =
+      "translateX(" + (currentOffset + offset) + "px)";
 
-        $cards.forEach(($card) => $card.addEventListener("click", onClick));
+    $current.addClass("active").removeClass("prev").removeClass("next");
 
-        // Keyboard nav
-        document.body.addEventListener("keydown", (ev) => {
-          if (ev.keyCode == 37) {
-            // left
-            _$(".active").prev().el?.click();
-          } else if (ev.keyCode == 39) {
-            // right
-            _$(".active").next().el?.click();
-          }
-        });
-      })();
+    $current
+      .prevAll((el) =>
+        el.removeClass("next").removeClass("active").addClass("prev")
+      )
+      .nextAll((el) =>
+        el.removeClass("prev").removeClass("active").addClass("next")
+      );
+  }
+
+  $cards.forEach(($card) => $card.addEventListener("click", onClick));
+
+  // Keyboard nav
+  document.body.addEventListener("keydown", (ev) => {
+    if (ev.keyCode == 37) {
+      // left
+      _$(selector.cards + ".active")
+        .prev()
+        .el?.click();
+    } else if (ev.keyCode == 39) {
+      // right
+      _$(selector.cards + ".active")
+        .next()
+        .el?.click();
+    }
+  });
+}
+
       
-      console.log('INIT')
+      
+      console.log('INIT', Slider())
     </script>
   </body>
 </html>
