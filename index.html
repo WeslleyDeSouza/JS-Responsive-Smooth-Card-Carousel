@@ -266,7 +266,7 @@
       <div class="card-slide"></div>
     </div>
     <script>
-      /*
+/*
  * https://github.com/WeslleyDeSouza/Responsive-Smooth-Card-Carousel
  * */
 function Slider(parameters = {}) {
@@ -335,22 +335,22 @@ function Slider(parameters = {}) {
   $num = $cards.length;
   $even = $num / 2;
   $odd = ($num + 1) / 2;
+  let startIndex = null;
 
-  if ($num % 2 == 0) {
-    _$(selector.cards + ":nth-child(" + $even + ")")
-      .addClass("active")
-      .prevAll((node) => node.addClass("prev"))
-      .nextAll((node) => node.addClass("next"));
-  } else {
-    _$(selector.cards + ":nth-child(" + $odd + ")")
-      .addClass("active")
-      .prevAll((node) => node.addClass("prev"))
-      .nextAll((node) => node.addClass("next"));
-  }
+  startIndex = $num % 2 == 0 ? $even : $odd;
 
-  function onClick(ev) {
+  _$(selector.cards + ":nth-child(" + startIndex + ")")
+    .addClass("active")
+    .prevAll((node) => node.addClass("prev"))
+    .nextAll((node) => node.addClass("next"));
+  let tempLastEl = startIndex;
+
+  function onItemClick(ev) {
+    let index = Array.from(ev.target.parentNode.children).indexOf(ev.target);
+    if (tempLastEl === index) return;
+    tempLastEl = index;
+
     let offset = +_$(selector.cards + ".active").el.clientWidth;
-    console.log(offset);
     let match = $container.el.style.transform.match(/-?[0-9]+(\.[0-9]+)?/g, "");
     const currentOffset = +(match ? match[0] : 0) || 0;
     const $current = _$(ev.target);
@@ -371,7 +371,9 @@ function Slider(parameters = {}) {
       );
   }
 
-  $cards.forEach(($card) => $card.addEventListener("click", onClick));
+  $cards.forEach(($card) =>
+    $card.addEventListener("click", () => onItemClick({ target: $card }))
+  );
 
   // Keyboard nav
   document.body.addEventListener("keydown", (ev) => {
