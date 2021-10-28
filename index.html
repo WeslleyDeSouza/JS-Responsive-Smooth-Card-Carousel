@@ -269,12 +269,35 @@
 /*
  * https://github.com/WeslleyDeSouza/Responsive-Smooth-Card-Carousel
  * */
+ /*
+ * @author Weslley De Souza
+ * 28.10.2021
+ * https://github.com/WeslleyDeSouza/Responsive-Smooth-Card-Carousel
+ * TODO: Pass start index (active)
+ * */
 function Slider(parameters = {}) {
+  /**
+   * Define Selector
+   * */
   const selector = {
     container: parameters.container || ".card-carousel",
     cards: parameters.cards || ".card-slide",
   };
 
+  /**
+   * Define Callbacks
+   * */
+  const callbacks = {
+    onIndexChanged(val, initial) {
+      parameters.onIndexChanged
+        ? parameters.onIndexChanged(val, initial)
+        : null;
+    },
+  };
+
+  /**
+   * Function helper
+   * */
   const siblings = {
     getNextAll(elem, filter) {
       var sibs = [];
@@ -294,6 +317,9 @@ function Slider(parameters = {}) {
     },
   };
 
+  /**
+   * Jquery Replacer
+   * */
   const _$ = (selector) => {
     return {
       el:
@@ -329,9 +355,15 @@ function Slider(parameters = {}) {
     };
   };
 
+  /**
+   * $elements
+   * */
   $container = _$(document.querySelector(selector.container));
   $cards = $container.el.querySelectorAll(selector.cards);
 
+  /**
+   * set automaticly the current active slide
+   * */
   $num = $cards.length;
   $even = $num / 2;
   $odd = ($num + 1) / 2;
@@ -343,12 +375,16 @@ function Slider(parameters = {}) {
     .addClass("active")
     .prevAll((node) => node.addClass("prev"))
     .nextAll((node) => node.addClass("next"));
-  let tempLastEl = startIndex;
+  let tempLastEl = startIndex - 1;
+
+  callbacks.onIndexChanged(tempLastEl, true);
 
   function onItemClick(ev) {
     let index = Array.from(ev.target.parentNode.children).indexOf(ev.target);
     if (tempLastEl === index) return;
     tempLastEl = index;
+
+    callbacks.onIndexChanged(index);
 
     let offset = +_$(selector.cards + ".active").el.clientWidth;
     let match = $container.el.style.transform.match(/-?[0-9]+(\.[0-9]+)?/g, "");
@@ -374,22 +410,9 @@ function Slider(parameters = {}) {
   $cards.forEach(($card) =>
     $card.addEventListener("click", () => onItemClick({ target: $card }))
   );
-
-  // Keyboard nav
-  document.body.addEventListener("keydown", (ev) => {
-    if (ev.keyCode == 37) {
-      // left
-      _$(selector.cards + ".active")
-        .prev()
-        .el?.click();
-    } else if (ev.keyCode == 39) {
-      // right
-      _$(selector.cards + ".active")
-        .next()
-        .el?.click();
-    }
-  });
 }
+
+
 
       
       
