@@ -410,11 +410,9 @@ function Slider(parameters = {}) {
   $cards.forEach(($card) =>
     $card.addEventListener("click", () => onItemClick({ target: $card }))
   );
-}
-
-
-
-       // Keyboard nav
+  
+  
+   // Demo purpose
   document.body.addEventListener("keydown", (ev) => {
     if (ev.keyCode == 37) {
       // left
@@ -424,8 +422,9 @@ function Slider(parameters = {}) {
       _$(".active").next().el?.click();
     }
   });
-      
-      console.log('INIT', Slider())
+
+}
+      Slider();
     </script>
   </body>
 </html>
