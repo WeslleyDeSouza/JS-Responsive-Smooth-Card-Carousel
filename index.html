@@ -414,7 +414,16 @@ function Slider(parameters = {}) {
 
 
 
-      
+       // Keyboard nav
+  document.body.addEventListener("keydown", (ev) => {
+    if (ev.keyCode == 37) {
+      // left
+      _$(".active").prev().el?.click();
+    } else if (ev.keyCode == 39) {
+      // right
+      _$(".active").next().el?.click();
+    }
+  });
       
       console.log('INIT', Slider())
     </script>
